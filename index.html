@@ -1,1203 +1,409 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0">
-    <title>Cardápio Digital — Restaurante Sabor & Tradição</title>
-    <style>
-        :root {
-            --bg-page: #FAFAFA;
-            --bg-card: #FFFFFF;
-            --text-primary: #1A1A1A;
-            --text-secondary: #3D3D3D;
-            --brand-primary: #1B4332;      /* Verde escuro alto contraste (> 10:1) */
-            --brand-primary-hover: #122E22;
-            --brand-accent: #B45309;       /* Âmbar escuro contraste > 5:1 */
-            --success-bg: #D1FAE5;
-            --success-text: #065F46;
-            --success-border: #059669;
-            --info-bg: #E0F2FE;
-            --info-text: #075985;
-            --warn-bg: #FEF3C7;
-            --warn-text: #92400E;
-            --border-color: #CBD5E1;
-            --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --radius-lg: 16px;
-            --radius-md: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-page);
-            color: var(--text-primary);
-            font-size: 24px; /* Mínimo 18pt (24px) conforme diretriz IHC */
-            line-height: 1.45;
-            padding-bottom: 130px; /* Espaço para barra fixa do carrinho */
-        }
-
-        /* Cabeçalho */
-        header {
-            background-color: var(--brand-primary);
-            color: #FFFFFF;
-            padding: 20px 24px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .brand-title h1 {
-            font-size: 30px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .brand-title p {
-            font-size: 20px;
-            color: #E2E8F0;
-            margin-top: 2px;
-        }
-
-        .mesa-badge {
-            background-color: #FFFFFF;
-            color: var(--brand-primary);
-            font-weight: 800;
-            font-size: 22px;
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            min-height: 52px;
-            display: flex;
-            align-items: center;
-        }
-
-        /* Barra Fixa de Navegação e Filtros */
-        .nav-sticky {
-            position: sticky;
-            top: 0;
-            z-index: 90;
-            background-color: #FFFFFF;
-            border-bottom: 2px solid var(--border-color);
-            padding: 14px 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-
-        .categorias-bar {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 12px;
-            scrollbar-width: none;
-        }
-        .categorias-bar::-webkit-scrollbar { display: none; }
-
-        .btn-cat {
-            min-height: 56px; /* >= 48x48px */
-            min-width: 120px;
-            padding: 12px 20px;
-            border: 2px solid var(--brand-primary);
-            border-radius: var(--radius-md);
-            background-color: #FFFFFF;
-            color: var(--brand-primary);
-            font-size: 22px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.15s ease;
-        }
-
-        .btn-cat.active {
-            background-color: var(--brand-primary);
-            color: #FFFFFF;
-        }
-
-        .filtros-bar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 14px;
-            padding-top: 10px;
-            border-top: 1px solid #E2E8F0;
-        }
-
-        .filtro-label {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-secondary);
-        }
-
-        .btn-filtro {
-            min-height: 52px; /* >= 48x48px */
-            padding: 10px 20px;
-            border: 2px solid var(--success-border);
-            border-radius: 50px;
-            background-color: #FFFFFF;
-            color: var(--success-text);
-            font-size: 21px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-filtro.active {
-            background-color: var(--success-text);
-            color: #FFFFFF;
-            border-color: var(--success-text);
-        }
-
-        .btn-limpar-filtro {
-            min-height: 52px;
-            padding: 10px 18px;
-            border: 2px solid #94A3B8;
-            border-radius: 50px;
-            background-color: #F1F5F9;
-            color: var(--text-primary);
-            font-size: 20px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        /* Container Principal e Grid de Pratos */
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px 20px;
-        }
-
-        .section-header {
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section-header h2 {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--brand-primary);
-        }
-
-        .resultados-count {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            background: #E2E8F0;
-            padding: 6px 14px;
-            border-radius: 8px;
-        }
-
-        .grid-pratos {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-        }
-
-        .card-prato {
-            background-color: var(--bg-card);
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-card);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .card-img-wrap {
-            position: relative;
-            width: 100%;
-            height: 210px;
-            background-color: #E2E8F0;
-        }
-
-        .card-img-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .badge-porcao {
-            position: absolute;
-            bottom: 12px;
-            left: 12px;
-            background-color: rgba(26, 26, 26, 0.92);
-            color: #FFFFFF;
-            font-size: 19px;
-            font-weight: 700;
-            padding: 6px 14px;
-            border-radius: 8px;
-        }
-
-        .card-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex-grow: 1;
-        }
-
-        .prato-titulo {
-            font-size: 25px;
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1.25;
-        }
-
-        .prato-subtitulo {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--brand-accent);
-        }
-
-        .prato-desc {
-            font-size: 22px; /* >= 18pt */
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-
-        .tags-alergenos {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
-        }
-
-        .tag-selo {
-            font-size: 18px;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .tag-sem-lactose {
-            background-color: var(--success-bg);
-            color: var(--success-text);
-            border: 1.5px solid var(--success-border);
-        }
-
-        .tag-sem-gluten {
-            background-color: var(--info-bg);
-            color: var(--info-text);
-            border: 1.5px solid #0284C7;
-        }
-
-        .tag-info {
-            background-color: var(--warn-bg);
-            color: var(--warn-text);
-            border: 1.5px solid #D97706;
-        }
-
-        .card-footer {
-            padding: 16px 20px 20px;
-            border-top: 1.5px solid #E2E8F0;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            background-color: #F8FAFC;
-        }
-
-        .preco-valor {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text-primary);
-        }
-
-        .btn-escolher {
-            width: 100%;
-            min-height: 58px; /* >= 48x48px com folga */
-            background-color: var(--brand-primary);
-            color: #FFFFFF;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 22px;
-            font-weight: 800;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-escolher:active {
-            background-color: var(--brand-primary-hover);
-            transform: scale(0.99);
-        }
-
-        /* Barra Inferior Fixa do Carrinho */
-        .carrinho-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 95;
-            background-color: #FFFFFF;
-            border-top: 3px solid var(--brand-primary);
-            padding: 14px 24px;
-            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.14);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .carrinho-resumo {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .carrinho-resumo span.qtd-label {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-secondary);
-        }
-
-        .carrinho-resumo strong.total-label {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--brand-primary);
-        }
-
-        .btn-ver-carrinho {
-            min-height: 60px;
-            min-width: 280px;
-            padding: 14px 28px;
-            background-color: #15803D;
-            color: #FFFFFF;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 23px;
-            font-weight: 800;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-ver-carrinho:disabled {
-            background-color: #94A3B8;
-            cursor: not-allowed;
-        }
-
-        /* Toast de Feedback Imediato */
-        .toast-feedback {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 200;
-            background-color: #065F46;
-            color: #FFFFFF;
-            border: 3px solid #A7F3D0;
-            padding: 18px 28px;
-            border-radius: var(--radius-md);
-            font-size: 23px;
-            font-weight: 800;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-            display: none;
-            text-align: center;
-            max-width: 90%;
-        }
-
-        /* Modais (Personalização, Carrinho e Sucesso) */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(15, 23, 42, 0.72);
-            z-index: 150;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-
-        .modal-backdrop.open {
-            display: flex;
-        }
-
-        .modal-box {
-            background-color: #FFFFFF;
-            width: 100%;
-            max-width: 680px;
-            max-height: 92vh;
-            overflow-y: auto;
-            border-radius: var(--radius-lg);
-            border: 3px solid var(--brand-primary);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            background-color: var(--brand-primary);
-            color: #FFFFFF;
-            padding: 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .modal-header h3 {
-            font-size: 26px;
-            font-weight: 800;
-        }
-
-        .btn-fechar-modal {
-            min-width: 54px;
-            min-height: 54px;
-            background-color: #FFFFFF;
-            color: var(--text-primary);
-            border: none;
-            border-radius: 12px;
-            font-size: 24px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* Opções de Personalização Grandes (Sem Dropdowns) */
-        .opcoes-grupo h4 {
-            font-size: 23px;
-            font-weight: 800;
-            margin-bottom: 12px;
-            color: var(--text-primary);
-        }
-
-        .opcao-check-btn {
-            width: 100%;
-            min-height: 60px;
-            padding: 14px 18px;
-            margin-bottom: 12px;
-            border: 2.5px solid var(--border-color);
-            border-radius: var(--radius-md);
-            background-color: #FFFFFF;
-            color: var(--text-primary);
-            font-size: 22px;
-            font-weight: 700;
-            text-align: left;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .opcao-check-btn.selected {
-            border-color: var(--success-border);
-            background-color: var(--success-bg);
-            color: var(--success-text);
-        }
-
-        .check-box-visual {
-            width: 32px;
-            height: 32px;
-            border: 2.5px solid currentColor;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-        }
-
-        /* Controle de Quantidade Grande */
-        .qtd-control {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            background-color: #F1F5F9;
-            padding: 14px;
-            border-radius: var(--radius-md);
-        }
-
-        .btn-qtd {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            border: 2px solid var(--brand-primary);
-            background-color: #FFFFFF;
-            color: var(--brand-primary);
-            font-size: 30px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .qtd-numero {
-            font-size: 30px;
-            font-weight: 800;
-            min-width: 48px;
-            text-align: center;
-        }
-
-        .modal-footer {
-            padding: 20px 24px;
-            border-top: 2px solid #E2E8F0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-            justify-content: space-between;
-            background-color: #F8FAFC;
-        }
-
-        .btn-secundario {
-            min-height: 58px;
-            padding: 14px 22px;
-            border: 2px solid #64748B;
-            background-color: #FFFFFF;
-            color: var(--text-primary);
-            border-radius: var(--radius-md);
-            font-size: 21px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .btn-confirmar-acao {
-            flex-grow: 1;
-            min-height: 60px;
-            padding: 14px 24px;
-            border: none;
-            background-color: #15803D;
-            color: #FFFFFF;
-            border-radius: var(--radius-md);
-            font-size: 23px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        /* Itens dentro do Carrinho */
-        .item-carrinho {
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 14px;
-            background-color: #FFFFFF;
-        }
-
-        .item-carrinho-info h5 {
-            font-size: 23px;
-            font-weight: 800;
-        }
-
-        .item-carrinho-obs {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--success-text);
-            margin-top: 4px;
-        }
-
-        .item-carrinho-preco {
-            font-size: 22px;
-            font-weight: 800;
-            margin-top: 6px;
-        }
-
-        .btn-remover-item {
-            min-width: 56px;
-            min-height: 56px;
-            background-color: #FEE2E2;
-            color: #991B1B;
-            border: 2px solid #DC2626;
-            border-radius: 12px;
-            font-size: 20px;
-            font-weight: 800;
-            padding: 0 14px;
-            cursor: pointer;
-        }
-
-        .total-box-carrinho {
-            background-color: #F0FDF4;
-            border: 2.5px solid #15803D;
-            border-radius: var(--radius-md);
-            padding: 18px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .total-box-carrinho span {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .total-box-carrinho strong {
-            font-size: 30px;
-            font-weight: 800;
-            color: #15803D;
-        }
-
-        /* Tela de Sucesso do Pedido */
-        .sucesso-box {
-            text-align: center;
-            padding: 20px 10px;
-        }
-
-        .sucesso-icone {
-            font-size: 64px;
-            margin-bottom: 12px;
-        }
-
-        .sucesso-box h4 {
-            font-size: 28px;
-            font-weight: 800;
-            color: #15803D;
-            margin-bottom: 10px;
-        }
-
-        .sucesso-box p {
-            font-size: 22px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cardápio Digital — Restaurante Sabor & Tradição</title>
+  <style>
+    :root {
+      --bg: #FAFAFA;
+      --card: #FFFFFF;
+      --ink: #1A1A1A;
+      --muted: #3D3D3D;
+      --verde: #1B4332;
+      --verde-claro: #D1FAE5;
+      --verde-texto: #065F46;
+      --borda: #CBD5E1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 22px;
+      line-height: 1.45;
+      padding-bottom: 130px;
+    }
+    header {
+      background: var(--verde);
+      color: #FFFFFF;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 { font-size: 28px; }
+    .mesa {
+      background: #FFFFFF;
+      color: var(--verde);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 800;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+    }
+    .barra-topo {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #FFFFFF;
+      border-bottom: 2px solid var(--borda);
+      padding: 14px 20px;
+    }
+    .cats, .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .filtros {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #E2E8F0;
+    }
+    button {
+      font-family: inherit;
+      font-size: 20px;
+      font-weight: 700;
+      min-height: 52px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 2px solid var(--verde);
+      background: #FFFFFF;
+      color: var(--verde);
+      cursor: pointer;
+    }
+    button.ativo {
+      background: var(--verde);
+      color: #FFFFFF;
+    }
+    .btn-acao {
+      background: var(--verde-texto);
+      border-color: var(--verde-texto);
+      color: #FFFFFF;
+      width: 100%;
+    }
+    .btn-acao:disabled {
+      background: #94A3B8;
+      border-color: #94A3B8;
+      cursor: not-allowed;
+    }
+    main {
+      max-width: 1160px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .topo-lista {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .item {
+      background: var(--card);
+      border: 2px solid var(--borda);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .selo {
+      display: inline-block;
+      background: var(--verde-claro);
+      color: var(--verde-texto);
+      border: 1.5px solid var(--verde-texto);
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-right: 8px;
+      margin-top: 6px;
+    }
+    .preco { font-size: 26px; font-weight: 800; }
+    .rodape-carrinho {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border-top: 3px solid var(--verde);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      z-index: 30;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal.aberto { display: flex; }
+    .caixa-modal {
+      background: #FFFFFF;
+      border: 3px solid var(--verde);
+      border-radius: 16px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .opcao-btn {
+      width: 100%;
+      text-align: left;
+      margin-top: 10px;
+    }
+    .opcao-btn.marcada {
+      background: var(--verde-claro);
+      color: var(--verde-texto);
+      border-color: var(--verde-texto);
+    }
+  </style>
 </head>
 <body>
-
-<div id="toastFeedback" class="toast-feedback" role="status" aria-live="polite"></div>
-
-<header>
-    <div class="brand-title">
-        <h1>🍽️ Restaurante Sabor &amp; Tradição</h1>
-        <p>Cardápio Digital Interativo • Toque nos botões para escolher</p>
+  <header>
+    <div>
+      <h1>Restaurante Sabor &amp; Tradição</h1>
+      <p style="font-size:19px;">Cardápio Digital • Toque nos botões para filtrar e pedir</p>
     </div>
-    <div class="mesa-badge">📍 Mesa 04</div>
-</header>
+    <div class="mesa">Mesa 04</div>
+  </header>
 
-<nav class="nav-sticky" aria-label="Categorias e Filtros do Cardápio">
-    <div class="categorias-bar" id="categoriasBar">
-        <button class="btn-cat active" data-cat="Todos">📋 Todos</button>
-        <button class="btn-cat" data-cat="Carnes">🥩 Carnes</button>
-        <button class="btn-cat" data-cat="Peixes">🐟 Peixes e Frutos do Mar</button>
-        <button class="btn-cat" data-cat="Entradas">🥖 Entradas</button>
-        <button class="btn-cat" data-cat="Vegetarianos">🥗 Massas, Veg e Kids</button>
-        <button class="btn-cat" data-cat="Sobremesas">🍰 Sobremesas</button>
-        <button class="btn-cat" data-cat="Bebidas">🥤 Bebidas</button>
+  <div class="barra-topo">
+    <div class="cats" id="listaCategorias">
+      <button type="button" class="ativo" data-cat="Todos">Todos</button>
+      <button type="button" data-cat="Carnes">Carnes</button>
+      <button type="button" data-cat="Peixes">Peixes</button>
+      <button type="button" data-cat="Entradas">Entradas</button>
+      <button type="button" data-cat="Vegetarianos">Massas, Veg e Kids</button>
+      <button type="button" data-cat="Sobremesas">Sobremesas</button>
+      <button type="button" data-cat="Bebidas">Bebidas</button>
     </div>
-
-    <div class="filtros-bar">
-        <span class="filtro-label">Filtros de Restrição:</span>
-        <button class="btn-filtro" id="btnFiltroLactose" aria-pressed="false">
-            🥛 Sem Lactose
-        </button>
-        <button class="btn-filtro" id="btnFiltroGluten" aria-pressed="false">
-            🌾 Sem Glúten
-        </button>
-        <button class="btn-limpar-filtro" id="btnLimparFiltros" style="display:none;">
-            ✕ Limpar Filtros
-        </button>
+    <div class="filtros">
+      <span>Restrição:</span>
+      <button type="button" id="btnLactose">Sem Lactose</button>
+      <button type="button" id="btnGluten">Sem Glúten</button>
+      <button type="button" id="btnLimpar" style="display:none;">Limpar Filtros</button>
     </div>
-</nav>
+  </div>
 
-<main>
-    <div class="section-header">
-        <h2 id="tituloSecao">Todos os Pratos e Bebidas</h2>
-        <span class="resultados-count" id="contadorResultados">17 opções disponíveis</span>
+  <main>
+    <div class="topo-lista">
+      <h2 id="tituloLista">Todos os Pratos e Bebidas</h2>
+      <span id="contadorItens">0 opções</span>
     </div>
+    <div class="grid" id="gridItens"></div>
+  </main>
 
-    <div class="grid-pratos" id="gridPratos"></div>
-</main>
-
-<!-- Barra Inferior Fixa do Carrinho -->
-<div class="carrinho-bar">
-    <div class="carrinho-resumo">
-        <span class="qtd-label" id="carrinhoQtdTexto">Seu pedido está vazio</span>
-        <strong class="total-label" id="carrinhoTotalTexto">Total: R$ 0,00</strong>
+  <div class="rodape-carrinho">
+    <div>
+      <div id="resumoQtd" style="font-size:19px;">Pedido vazio</div>
+      <div id="resumoTotal" style="font-size:26px;font-weight:800;color:var(--verde);">Total: R$ 0,00</div>
     </div>
-    <button class="btn-ver-carrinho" id="btnAbrirCarrinho" disabled>
-        🛒 Ver Meu Pedido
-    </button>
-</div>
+    <button type="button" class="btn-acao" style="width:auto;" id="btnAbrirCarrinho" disabled>Revisar e Enviar Pedido</button>
+  </div>
 
-<!-- Modal 1: Detalhes e Personalização do Prato -->
-<div class="modal-backdrop" id="modalPersonalizar" role="dialog" aria-modal="true" aria-labelledby="modalPratoTitulo">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3 id="modalPratoTitulo">Personalizar Item</h3>
-            <button class="btn-fechar-modal" id="btnFecharPersonalizar" aria-label="Fechar janela">✕</button>
-        </div>
-        <div class="modal-body">
-            <div>
-                <p id="modalPratoSubtitulo" class="prato-subtitulo"></p>
-                <p id="modalPratoDesc" class="prato-desc" style="margin-top:6px;"></p>
-                <div id="modalPratoTags" class="tags-alergenos" style="margin-top:10px;"></div>
-            </div>
-
-            <div class="opcoes-grupo" id="grupoOpcoesPersonalizacao">
-                <h4>Deseja retirar algum ingrediente? (Toque para marcar)</h4>
-                <div id="listaOpcoesPersonalizacao"></div>
-            </div>
-
-            <div class="opcoes-grupo">
-                <h4>Quantidade de Porções</h4>
-                <div class="qtd-control">
-                    <button type="button" class="btn-qtd" id="btnMenosQtd" aria-label="Diminuir quantidade">−</button>
-                    <span class="qtd-numero" id="valorQtdModal">1</span>
-                    <button type="button" class="btn-qtd" id="btnMaisQtd" aria-label="Aumentar quantidade">+</button>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-secundario" id="btnCancelarPersonalizar">Voltar</button>
-            <button type="button" class="btn-confirmar-acao" id="btnConfirmarAdicionar">
-                + Adicionar ao Pedido — R$ 0,00
-            </button>
-        </div>
+  <div class="modal" id="modalPersonaliza">
+    <div class="caixa-modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <h3 id="tituloModalItem">Personalizar</h3>
+        <button type="button" id="fecharModalItem">Fechar</button>
+      </div>
+      <p id="descModalItem"></p>
+      <div id="opcoesModalItem"></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
+        <button type="button" id="menosQtd">−</button>
+        <strong id="qtdAtual">1</strong>
+        <button type="button" id="maisQtd">+</button>
+      </div>
+      <button type="button" class="btn-acao" id="confirmarAdicionar">Adicionar ao Pedido</button>
     </div>
-</div>
+  </div>
 
-<!-- Modal 2: Revisar Pedido e Enviar para a Cozinha -->
-<div class="modal-backdrop" id="modalCarrinho" role="dialog" aria-modal="true" aria-labelledby="modalCarrinhoTitulo">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3 id="modalCarrinhoTitulo">🛒 Revisar e Enviar Pedido</h3>
-            <button class="btn-fechar-modal" id="btnFecharCarrinho" aria-label="Fechar carrinho">✕</button>
-        </div>
-        <div class="modal-body" id="corpoModalCarrinho">
-            <div id="listaItensCarrinho" style="display:flex; flex-direction:column; gap:12px;"></div>
-            <div class="total-box-carrinho">
-                <span>Valor Total da Conta:</span>
-                <strong id="totalFinalCarrinho">R$ 0,00</strong>
-            </div>
-        </div>
-        <div class="modal-footer" id="footerModalCarrinho">
-            <button type="button" class="btn-secundario" id="btnContinuarEscolhendo">+ Adicionar Mais Itens</button>
-            <button type="button" class="btn-confirmar-acao" id="btnEnviarCozinha">
-                ✅ Confirmar e Enviar para a Cozinha
-            </button>
-        </div>
+  <div class="modal" id="modalCarrinho">
+    <div class="caixa-modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <h3>Seu Pedido</h3>
+        <button type="button" id="fecharModalCarrinho">Fechar</button>
+      </div>
+      <div id="itensCarrinhoHtml"></div>
+      <strong id="totalModalCarrinho" style="font-size:26px;">Total: R$ 0,00</strong>
+      <button type="button" class="btn-acao" id="enviarCozinha">Confirmar e Enviar para a Cozinha</button>
     </div>
-</div>
+  </div>
 
-<script>
-    // Catálogo completo baseado no estudo de caso "Restaurante Sabor & Tradição"
-    // Com nomes traduzidos, porções explícitas, fotos e selos de alergênicos
-    const cardapio = [
-        // CARNES NOBRES (Página 3 & 4)
-        {
-            id: 1,
-            nome: "Bife Imperial do Barão",
-            subtitulo: "Contrafilé Grelhado com Arroz Temperado e Legumes",
-            categoria: "Carnes",
-            preco: 98.00,
-            porcao: "👤 Serve 1 pessoa",
-            descricao: "Carne bovina macia grelhada sem manteiga, acompanhada de arroz temperado e legumes frescos da horta. Preparo 100% livre de laticínios.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["🧅 Contém cebola (pode retirar)"],
-            opcoes: ["Retirar cebola", "Retirar alho", "Ponto: Bem passado", "Ponto: Ao ponto"],
-            imagem: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 2,
-            nome: "Segredo da Fazenda Sabor & Tradição",
-            subtitulo: "Costela Bovina Assada com Farofa Rica e Legumes",
-            categoria: "Carnes",
-            preco: 128.00,
-            porcao: "👥 Serve 2 pessoas",
-            descricao: "Corte bovino assado lentamente no forno a lenha, servido com farofa crocante de mandioca e legumes dourados no azeite.",
-            semLactose: true,
-            semGluten: false,
-            alergenosInfo: ["🧅 Contém cebola (pode retirar)", "🌾 Contém glúten"],
-            opcoes: ["Retirar cebola", "Farofa à parte"],
-            imagem: "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 3,
-            nome: "Filé à Moda do Fundador",
-            subtitulo: "Filé Mignon Grelhado ao Molho Escuro e Batatas",
-            categoria: "Carnes",
-            preco: 115.00,
-            porcao: "👤 Serve 1 pessoa",
-            descricao: "Medalhão de filé mignon grelhado na manteiga de ervas, acompanhado de batatas rústicas e molho escuro artesanal.",
-            semLactose: false,
-            semGluten: true,
-            alergenosInfo: ["🥛 Contém lactose (manteiga)", "🧅 Contém cebola"],
-            opcoes: ["Retirar cebola", "Molho à parte"],
-            imagem: "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 4,
-            nome: "Medalhão Fantasia de Sabores",
-            subtitulo: "Filé Mignon com Queijo Gratinado e Purê de Batatas",
-            categoria: "Carnes",
-            preco: 105.00,
-            porcao: "👤 Serve 1 pessoa",
-            descricao: "Corte grelhado na chapa coberto com queijo derretido e servido com purê cremoso de batatas.",
-            semLactose: false,
-            semGluten: true,
-            alergenosInfo: ["🥛 Contém lactose (queijo e leite)"],
-            opcoes: ["Retirar cebola", "Sem cobertura de queijo"],
-            imagem: "https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&w=800&q=80"
-        },
-
-        // PEIXES E FRUTOS DO MAR (Página 5 & 6)
-        {
-            id: 5,
-            nome: "Bacalhau Dourado dos Navegantes",
-            subtitulo: "Posta de Bacalhau no Azeite com Batatas ao Murro",
-            categoria: "Peixes",
-            preco: 160.00,
-            porcao: "👥 Serve 2 pessoas",
-            descricao: "Posta nobre de bacalhau assada no azeite extravirgem com batatas ao murro, azeitonas pretas e alho.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["🐟 Peixe", "🧅 Contém cebola (pode retirar)"],
-            opcoes: ["Retirar cebola", "Sem azeitonas"],
-            imagem: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 6,
-            nome: "Moqueca Encanto das Águas",
-            subtitulo: "Moqueca de Peixe Branco com Leite de Coco e Arroz",
-            categoria: "Peixes",
-            preco: 145.00,
-            porcao: "👥 Serve 2 pessoas",
-            descricao: "Postas de badejo cozidas em panela de barro com leite de coco natural, azeite de dendê, pimentões e arroz branco.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["🐟 Peixe (sem crustáceos)", "🌶️ Pimenta suave à parte"],
-            opcoes: ["Retirar cebola", "Sem coentro", "Sem pimentão"],
-            imagem: "https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 7,
-            nome: "Salmão Nobre da Montanha",
-            subtitulo: "Filé de Salmão Grelhado ao Molho Cítrico e Grãos",
-            categoria: "Peixes",
-            preco: 125.00,
-            porcao: "👤 Serve 1 pessoa",
-            descricao: "Salmão grelhado com redução cítrica de laranja e limão siciliano, acompanhado de arroz sete grãos.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["🐟 Peixe"],
-            opcoes: ["Retirar cebola", "Molho cítrico à parte"],
-            imagem: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 8,
-            nome: "Camarão Suprema Harmonia",
-            subtitulo: "Camarões ao Alho com Arroz Cremoso de Queijo",
-            categoria: "Peixes",
-            preco: 138.00,
-            porcao: "👥 Serve 2 pessoas",
-            descricao: "Camarões salteados no azeite com alho, servidos sobre arroz cremoso com requeijão e batata palha artesanal.",
-            semLactose: false,
-            semGluten: true,
-            alergenosInfo: ["🦐 Crustáceos", "🥛 Contém lactose"],
-            opcoes: ["Retirar cebola", "Sem batata palha"],
-            imagem: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80"
-        },
-
-        // ENTRADAS E PETISCOS (Página 1 & 2)
-        {
-            id: 9,
-            nome: "Delícia Colonial",
-            subtitulo: "Tábua de Embutidos Artesanais e Torradas",
-            categoria: "Entradas",
-            preco: 48.00,
-            porcao: "👥 Serve 2 pessoas",
-            descricao: "Seleção de salame artesanal, copa, azeitonas e torradinhas grelhadas no azeite de ervas.",
-            semLactose: true,
-            semGluten: false,
-            alergenosInfo: ["🌾 Contém glúten (torradas)"],
-            opcoes: ["Sem torradas (opção sem glúten)", "Retirar cebola"],
-            imagem: "https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 10,
-            nome: "Surpresa do Mar do Sul",
-            subtitulo: "Iscas de Peixe Empanadas com Molho Tárcaro",
-            categoria: "Entradas",
-            preco: 62.00,
-            porcao: "👥 Serve 2 pessoas",
-            descricao: "Iscas crocantes de tilápia empanadas na farinha panko, acompanhadas de molho tártaro da casa.",
-            semLactose: false,
-            semGluten: false,
-            alergenosInfo: ["🐟 Peixe", "🌾 Contém glúten", "🥛 Molho contém lactose"],
-            opcoes: ["Molho à parte"],
-            imagem: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 11,
-            nome: "Mistério de Queijos e Ervas",
-            subtitulo: "Tábua de Queijos Variados com Geleia e Pães",
-            categoria: "Entradas",
-            preco: 44.00,
-            porcao: "👥 Serve 2 pessoas",
-            descricao: "Queijo minas padrão, prato, gorgonzola, geleia artesanal de frutas vermelhas e pães frescos.",
-            semLactose: false,
-            semGluten: false,
-            alergenosInfo: ["🥛 Contém lactose", "🌾 Contém glúten"],
-            opcoes: ["Sem queijo gorgonzola"],
-            imagem: "https://images.unsplash.com/photo-1452195100486-9cc805987862?auto=format&fit=crop&w=800&q=80"
-        },
-
-        // VEGETARIANOS, MASSAS E KIDS (Página 7 & 8)
-        {
-            id: 12,
-            nome: "Jardim do Éden Verde",
-            subtitulo: "Salteado de Grãos, Legumes no Vapor e Cogumelos",
-            categoria: "Vegetarianos",
-            preco: 58.00,
-            porcao: "👤 Serve 1 pessoa",
-            descricao: "Prato 100% vegetal com grão-de-bico, brócolis, cenoura no vapor e cogumelos paris grelhados no azeite.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["🌱 Vegano", "🧅 Contém cebola (pode retirar)"],
-            opcoes: ["Retirar cebola", "Sem cogumelos"],
-            imagem: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 13,
-            nome: "Massa do Artista ao Molho Secreto",
-            subtitulo: "Espaguete Artesanal ao Molho de Tomates Frescos",
-            categoria: "Vegetarianos",
-            preco: 68.00,
-            porcao: "👤 Serve 1 pessoa",
-            descricao: "Massa longa cozida al dente com molho rústico de tomates italianos, manjericão e alho.",
-            semLactose: true,
-            semGluten: false,
-            alergenosInfo: ["🌾 Contém glúten", "🧅 Contém cebola (pode retirar)"],
-            opcoes: ["Retirar cebola", "Queijo ralado à parte"],
-            imagem: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 14,
-            nome: "Prato da Alegria (Kids)",
-            subtitulo: "Iscas de Carne, Arroz Branco e Batatas Assadas",
-            categoria: "Vegetarianos",
-            preco: 42.00,
-            porcao: "🧒 Porção Infantil (1 criança)",
-            descricao: "Refeição equilibrada sem temperos fortes, com iscas de filé grelhadas, arroz soltinho e batatinhas assadas.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["✅ Sem temperos picantes"],
-            opcoes: ["Sem batatas", "Sem arroz"],
-            imagem: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
-        },
-
-        // SOBREMESAS (Página 9)
-        {
-            id: 15,
-            nome: "Doce Tentação da Vovó",
-            subtitulo: "Pudim Cremoso de Leite com Calda de Frutas Vermelhas",
-            categoria: "Sobremesas",
-            preco: 28.00,
-            porcao: "👤 Individual (1 pessoa)",
-            descricao: "Sobremesa gelada de colher preparada com leite condensado e calda artesanal de morango e amora.",
-            semLactose: false,
-            semGluten: true,
-            alergenosInfo: ["🥛 Contém lactose"],
-            opcoes: ["Calda à parte"],
-            imagem: "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=800&q=80"
-        },
-
-        // BEBIDAS (Página 10 - Separadas claramente para Tarefa 2!)
-        {
-            id: 16,
-            nome: "Água Mineral com Gás (500ml)",
-            subtitulo: "Garrafa 500ml Gelada",
-            categoria: "Bebidas",
-            preco: 9.00,
-            porcao: "🥤 Individual (500ml)",
-            descricao: "Água mineral natural gaseificada, servida bem gelada. Acompanha rodela de limão opcional.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["❄️ Gelada"],
-            opcoes: ["Com gelo e limão", "Sem gelo"],
-            imagem: "https://images.unsplash.com/photo-1560023907-5f339617ea30?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 17,
-            nome: "Água Mineral sem Gás (500ml)",
-            subtitulo: "Garrafa 500ml Natural ou Gelada",
-            categoria: "Bebidas",
-            preco: 9.00,
-            porcao: "🥤 Individual (500ml)",
-            descricao: "Água mineral natural sem gás.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["💧 Natural"],
-            opcoes: ["Gelada", "Temperatura ambiente"],
-            imagem: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 18,
-            nome: "Suco Natural de Laranja (350ml)",
-            subtitulo: "Copo 350ml • Feito na Hora sem Açúcar",
-            categoria: "Bebidas",
-            preco: 14.00,
-            porcao: "🥤 Individual (350ml)",
-            descricao: "Suco puro de laranja espremido na hora, sem adição de água ou açúcar.",
-            semLactose: true,
-            semGluten: true,
-            alergenosInfo: ["🍊 100% Natural"],
-            opcoes: ["Com gelo", "Sem gelo"],
-            imagem: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=800&q=80"
-        }
+  <script>
+    const itens = [
+      { id: 1, nome: "Bife Imperial do Barão", sub: "Contrafilé grelhado com arroz e legumes • Serve 1 pessoa", cat: "Carnes", preco: 98, semLactose: true, semGluten: true, opcoes: ["Retirar cebola", "Retirar alho"] },
+      { id: 2, nome: "Segredo da Fazenda", sub: "Costela assada com farofa e legumes • Serve 2 pessoas", cat: "Carnes", preco: 128, semLactose: true, semGluten: false, opcoes: ["Retirar cebola"] },
+      { id: 3, nome: "Filé à Moda do Fundador", sub: "Filé mignon ao molho escuro e batatas • Serve 1 pessoa", cat: "Carnes", preco: 115, semLactose: false, semGluten: true, opcoes: ["Retirar cebola"] },
+      { id: 4, nome: "Medalhão Fantasia de Sabores", sub: "Filé mignon com queijo e purê • Serve 1 pessoa", cat: "Carnes", preco: 105, semLactose: false, semGluten: true, opcoes: ["Retirar cebola", "Sem queijo"] },
+      { id: 5, nome: "Bacalhau Dourado dos Navegantes", sub: "Posta no azeite com batatas • Serve 2 pessoas", cat: "Peixes", preco: 160, semLactose: true, semGluten: true, opcoes: ["Retirar cebola"] },
+      { id: 6, nome: "Moqueca Encanto das Águas", sub: "Peixe branco com leite de coco e arroz • Serve 2 pessoas", cat: "Peixes", preco: 145, semLactose: true, semGluten: true, opcoes: ["Retirar cebola", "Sem pimentão"] },
+      { id: 7, nome: "Salmão Nobre da Montanha", sub: "Salmão ao molho cítrico e grãos • Serve 1 pessoa", cat: "Peixes", preco: 125, semLactose: true, semGluten: true, opcoes: ["Retirar cebola"] },
+      { id: 8, nome: "Camarão Suprema Harmonia", sub: "Camarões ao alho com arroz cremoso • Serve 2 pessoas", cat: "Peixes", preco: 138, semLactose: false, semGluten: true, opcoes: ["Retirar cebola"] },
+      { id: 9, nome: "Delícia Colonial", sub: "Embutidos e torradas artesanais • Serve 2 pessoas", cat: "Entradas", preco: 48, semLactose: true, semGluten: false, opcoes: ["Retirar cebola"] },
+      { id: 10, nome: "Surpresa do Mar do Sul", sub: "Iscas de peixe empanadas • Serve 2 pessoas", cat: "Entradas", preco: 62, semLactose: false, semGluten: false, opcoes: ["Molho à parte"] },
+      { id: 11, nome: "Mistério de Queijos e Ervas", sub: "Queijos variados, geleia e pães • Serve 2 pessoas", cat: "Entradas", preco: 44, semLactose: false, semGluten: false, opcoes: ["Sem pães"] },
+      { id: 12, nome: "Jardim do Éden Verde", sub: "Grãos, legumes no vapor e cogumelos • Serve 1 pessoa", cat: "Vegetarianos", preco: 58, semLactose: true, semGluten: true, opcoes: ["Retirar cebola"] },
+      { id: 13, nome: "Massa do Artista ao Molho Secreto", sub: "Espaguete com molho de tomate • Serve 1 pessoa", cat: "Vegetarianos", preco: 68, semLactose: true, semGluten: false, opcoes: ["Retirar cebola"] },
+      { id: 14, nome: "Prato da Alegria (Kids)", sub: "Carne macia, arroz e batatas • Infantil", cat: "Vegetarianos", preco: 42, semLactose: true, semGluten: true, opcoes: ["Sem batatas"] },
+      { id: 15, nome: "Doce Tentação da Vovó", sub: "Sobremesa gelada com calda de frutas • Serve 1 pessoa", cat: "Sobremesas", preco: 28, semLactose: false, semGluten: true, opcoes: ["Calda à parte"] },
+      { id: 16, nome: "Água Mineral com Gás (500ml)", sub: "Garrafa 500ml", cat: "Bebidas", preco: 9, semLactose: true, semGluten: true, opcoes: ["Com gelo e limão", "Sem gelo"] },
+      { id: 17, nome: "Água Mineral sem Gás (500ml)", sub: "Garrafa 500ml", cat: "Bebidas", preco: 9, semLactose: true, semGluten: true, opcoes: ["Gelada", "Natural"] }
     ];
 
-    // Estado da Aplicação
-    let categoriaAtiva = "Todos";
-    let filtroSemLactose = false;
-    let filtroSemGluten = false;
+    let catAtual = "Todos";
+    let soLactose = false;
+    let soGluten = false;
     let carrinho = [];
-    let pratoAtualModal = null;
-    let qtdModal = 1;
-    let opcoesSelecionadasModal = new Set();
-    let numeroPedidoAtual = 104;
+    let itemSelecionado = null;
+    let qtdItem = 1;
+    let obsEscolhidas = new Set();
 
-    const formatarMoeda = (valor) => {
-        return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-    };
+    const moeda = v => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-    const mostrarToast = (mensagem) => {
-        const toast = document.getElementById("toastFeedback");
-        toast.textContent = mensagem;
-        toast.style.display = "block";
-        clearTimeout(window.toastTimer);
-        window.toastTimer = setTimeout(() => {
-            toast.style.display = "none";
-        }, 3200);
-    };
-
-    // Renderizar Grid de Pratos
-    function renderizarCardapio() {
-        const grid = document.getElementById("gridPratos");
-        const tituloSecao = document.getElementById("tituloSecao");
-        const contador = document.getElementById("contadorResultados");
-
-        const filtrados = cardapio.filter(item => {
-            const matchCat = (categoriaAtiva === "Todos") || (item.categoria === categoriaAtiva);
-            const matchLactose = !filtroSemLactose || item.semLactose;
-            const matchGluten = !filtroSemGluten || item.semGluten;
-            return matchCat && matchLactose && matchGluten;
-        });
-
-        let tituloTexto = categoriaAtiva === "Todos" ? "Todos os Pratos e Bebidas" : `Categoria: ${categoriaAtiva}`;
-        if (filtroSemLactose) tituloTexto += " • 🥛 Sem Lactose";
-        if (filtroSemGluten) tituloTexto += " • 🌾 Sem Glúten";
-        tituloSecao.textContent = tituloTexto;
-
-        contador.textContent = `${filtrados.length} ${filtrados.length === 1 ? "opção encontrada" : "opções encontradas"}`;
-
-        if (filtrados.length === 0) {
-            grid.innerHTML = `
-                <div style="grid-column: 1/-1; background:#FFF; padding:32px; border-radius:16px; border:2px solid #CBD5E1; text-align:center;">
-                    <p style="font-size:24px; font-weight:700; margin-bottom:16px;">Nenhum prato encontrado com essa combinação de filtros.</p>
-                    <button class="btn-escolher" style="max-width:320px; margin:0 auto;" onclick="limparTodosFiltros()">Mostrar Todas as Opções</button>
-                </div>
-            `;
-            return;
-        }
-
-        grid.innerHTML = filtrados.map(item => {
-            let selosHTML = "";
-            if (item.semLactose) {
-                selosHTML += `<span class="tag-selo tag-sem-lactose">🥛 Sem Lactose</span>`;
-            }
-            if (item.semGluten) {
-                selosHTML += `<span class="tag-selo tag-sem-gluten">🌾 Sem Glúten</span>`;
-            }
-            item.alergenosInfo.forEach(info => {
-                selosHTML += `<span class="tag-selo tag-info">${info}</span>`;
-            });
-
-            return `
-                <article class="card-prato">
-                    <div>
-                        <div class="card-img-wrap">
-                            <img src="${item.imagem}" alt="${item.nome}" loading="lazy">
-                            <span class="badge-porcao">${item.porcao}</span>
-                        </div>
-                        <div class="card-body">
-                            <h3 class="prato-titulo">${item.nome}</h3>
-                            <p class="prato-subtitulo">${item.subtitulo}</p>
-                            <p class="prato-desc">${item.descricao}</p>
-                            <div class="tags-alergenos">${selosHTML}</div>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <span class="preco-valor">${formatarMoeda(item.preco)}</span>
-                        <button type="button" class="btn-escolher" onclick="abrirModalPersonalizar(${item.id})">
-                            + Escolher e Personalizar
-                        </button>
-                    </div>
-                </article>
-            `;
-        }).join("");
+    function renderLista() {
+      const filtrados = itens.filter(i =>
+        (catAtual === "Todos" || i.cat === catAtual) &&
+        (!soLactose || i.semLactose) &&
+        (!soGluten || i.semGluten)
+      );
+      document.getElementById("tituloLista").textContent = catAtual === "Todos" ? "Todos os Pratos e Bebidas" : catAtual;
+      document.getElementById("contadorItens").textContent = filtrados.length + " opções";
+      const grid = document.getElementById("gridItens");
+      grid.innerHTML = filtrados.map(i => `
+        <div class="item">
+          <div>
+            <h3>${i.nome}</h3>
+            <p style="font-size:19px;color:var(--muted);margin-top:4px;">${i.sub}</p>
+            <div>
+              ${i.semLactose ? '<span class="selo">Sem Lactose</span>' : ''}
+              ${i.semGluten ? '<span class="selo">Sem Glúten</span>' : ''}
+            </div>
+          </div>
+          <div>
+            <div class="preco" style="margin-bottom:10px;">${moeda(i.preco)}</div>
+            <button type="button" class="btn-acao" onclick="abrirModal(${i.id})">Escolher e Personalizar</button>
+          </div>
+        </div>
+      `).join("");
     }
 
-    // Eventos de Categoria
-    document.querySelectorAll(".btn-cat").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".btn-cat").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            categoriaAtiva = btn.dataset.cat;
-            renderizarCardapio();
-        });
+    document.querySelectorAll("#listaCategorias button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#listaCategorias button").forEach(b => b.classList.remove("ativo"));
+        btn.classList.add("ativo");
+        catAtual = btn.dataset.cat;
+        renderLista();
+      });
     });
 
-    // Eventos de Filtros
-    const btnLactose = document.getElementById("btnFiltroLactose");
-    const btnGluten = document.getElementById("btnFiltroGluten");
-    const btnLimpar = document.getElementById("btnLimparFiltros");
-
-    function atualizarEstadoFiltros() {
-        btnLactose.classList.toggle("active", filtroSemLactose);
-        btnLactose.setAttribute("aria-pressed", filtroSemLactose);
-        btnGluten.classList.toggle("active", filtroSemGluten);
-        btnGluten.setAttribute("aria-pressed", filtroSemGluten);
-        btnLimpar.style.display = (filtroSemLactose || filtroSemGluten) ? "inline-flex" : "none";
-        renderizarCardapio();
+    function atualizarBotoesFiltro() {
+      document.getElementById("btnLactose").classList.toggle("ativo", soLactose);
+      document.getElementById("btnGluten").classList.toggle("ativo", soGluten);
+      document.getElementById("btnLimpar").style.display = (soLactose || soGluten) ? "inline-block" : "none";
+      renderLista();
     }
 
-    btnLactose.addEventListener("click", () => {
-        filtroSemLactose = !filtroSemLactose;
-        atualizarEstadoFiltros();
-    });
+    document.getElementById("btnLactose").addEventListener("click", () => { soLactose = !soLactose; atualizarBotoesFiltro(); });
+    document.getElementById("btnGluten").addEventListener("click", () => { soGluten = !soGluten; atualizarBotoesFiltro(); });
+    document.getElementById("btnLimpar").addEventListener("click", () => { soLactose = false; soGluten = false; atualizarBotoesFiltro(); });
 
-    btnGluten.addEventListener("click", () => {
-        filtroSemGluten = !filtroSemGluten;
-        atualizarEstadoFiltros();
-    });
-
-    function limparTodosFiltros() {
-        filtroSemLactose = false;
-        filtroSemGluten = false;
-        atualizarEstadoFiltros();
+    function abrirModal(id) {
+      itemSelecionado = itens.find(i => i.id === id);
+      qtdItem = 1;
+      obsEscolhidas.clear();
+      document.getElementById("tituloModalItem").textContent = itemSelecionado.nome;
+      document.getElementById("descModalItem").textContent = itemSelecionado.sub;
+      document.getElementById("qtdAtual").textContent = "1";
+      const box = document.getElementById("opcoesModalItem");
+      box.innerHTML = itemSelecionado.opcoes.map(op =>
+        `<button type="button" class="opcao-btn" onclick="toggleObs(this, '${op}')">${op}</button>`
+      ).join("");
+      document.getElementById("modalPersonaliza").classList.add("aberto");
     }
-    btnLimpar.addEventListener("click", limparTodosFiltros);
 
-    // Modal de Personalização
-    function abrirModalPersonalizar(idPrato) {
-        pratoAtualModal = cardapio.find
+    function toggleObs(el, op) {
+      if (obsEscolhidas.has(op)) { obsEscolhidas.delete(op); el.classList.remove("marcada"); }
+      else { obsEscolhidas.add(op); el.classList.add("marcada"); }
+    }
+
+    document.getElementById("menosQtd").addEventListener("click", () => {
+      if (qtdItem > 1) { qtdItem--; document.getElementById("qtdAtual").textContent = qtdItem; }
+    });
+    document.getElementById("maisQtd").addEventListener("click", () => {
+      qtdItem++; document.getElementById("qtdAtual").textContent = qtdItem;
+    });
+    document.getElementById("fecharModalItem").addEventListener("click", () => {
+      document.getElementById("modalPersonaliza").classList.remove("aberto");
+    });
+
+    document.getElementById("confirmarAdicionar").addEventListener("click", () => {
+      carrinho.push({
+        nome: itemSelecionado.nome,
+        preco: itemSelecionado.preco,
+        qtd: qtdItem,
+        obs: Array.from(obsEscolhidas).join(", ") || "Padrão"
+      });
+      document.getElementById("modalPersonaliza").classList.remove("aberto");
+      atualizarCarrinho();
+    });
+
+    function atualizarCarrinho() {
+      const qtdTotal = carrinho.reduce((s, x) => s + x.qtd, 0);
+      const valorTotal = carrinho.reduce((s, x) => s + x.qtd * x.preco, 0);
+      document.getElementById("resumoQtd").textContent = qtdTotal ? `${qtdTotal} item(ns) no pedido` : "Pedido vazio";
+      document.getElementById("resumoTotal").textContent = `Total: ${moeda(valorTotal)}`;
+      document.getElementById("btnAbrirCarrinho").disabled = qtdTotal === 0;
+    }
+
+    document.getElementById("btnAbrirCarrinho").addEventListener("click", () => {
+      const valorTotal = carrinho.reduce((s, x) => s + x.qtd * x.preco, 0);
+      document.getElementById("itensCarrinhoHtml").innerHTML = carrinho.map(x =>
+        `<div style="border:1.5px solid var(--borda);padding:12px;border-radius:10px;margin-bottom:10px;">
+          <strong>${x.qtd}x ${x.nome}</strong> — ${moeda(x.qtd * x.preco)}<br>
+          <span style="font-size:18px;color:var(--verde-texto);">Obs: ${x.obs}</span>
+        </div>`
+      ).join("");
+      document.getElementById("totalModalCarrinho").textContent = `Total: ${moeda(valorTotal)}`;
+      document.getElementById("modalCarrinho").classList.add("aberto");
+    });
+
+    document.getElementById("fecharModalCarrinho").addEventListener("click", () => {
+      document.getElementById("modalCarrinho").classList.remove("aberto");
+    });
+
+    document.getElementById("enviarCozinha").addEventListener("click", () => {
+      document.getElementById("itensCarrinhoHtml").innerHTML = "<p style='font-weight:700;color:var(--verde-texto);'>Pedido enviado para a cozinha com sucesso!</p>";
+      carrinho = [];
+      atualizarCarrinho();
+    });
+
+    renderLista();
+  </script>
+</body>
+</html>
